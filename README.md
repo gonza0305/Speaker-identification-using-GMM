@@ -1,41 +1,56 @@
 # Speaker-identification-using-GMM
 
+
 # Introduction 
 
 In this study we will implement a text-independent speaker identification system based on GMM. The project is divided into three main parts: the training phase, the testing phase and the improvement phase.
+
 There are a series of voice files from 16 different speakers in which a 16 kHz sampling frequency is used. Furthermore, these files are grouped into three different types: training files as “Training_List.txt” and testing files as “Test_List1.txt” and “Test_List2.txt”, with and without clean conditions, respectively.
-In the training phase we will build the GMM models for each speaker using the appropriate files for that task and the EM algorithm. For the testing phase, the Maximum Likelihood criterion will be used, according to which the speaker of each test file will be recognized based on the GMM model that produces the highest log-likelihood sequence. This testing phase, is divided into two sections in which the performance of the algorithm will be evaluated in both clean and noisy conditions, using the corresponding audio files.
+
+In the training phase we will build the GMM models for each speaker using the appropriate files for that task and the EM algorithm. For the testing phase, the Maximum Likelihood criterion will be used, according to which the speaker of each test file will be recognized based on the GMM model that produces the highest log-likelihood sequence.This testing phase, is divided into two sections in which the performance of the algorithm will be evaluated in both clean and noisy conditions, using the corresponding audio files.
+
 Finally, in the improvements phase, other features have been included and the number of Gaussians used to build the model have been varied, in order to increase the accuracy.
 For the execution and evaluation of the project, a random seed of 1 was established when creating the models so that the comparisons in the accuracies for the different methods and parameters are consistent.
+
 
 # Training phase
 
 Once we establish the execution environment and the global variables that will be used as parameters for the methods, the audio files intended for the training phase are read. The objective of this phase will be to extract the MFCC features that characterize each audio file and build the GMM model for each file. For this, the bookstore library has been used, which facilitates the task with already defined functions.
+
 The “lebrosa.load” function has been used to read the audio files and the “lebrosa.feature.mfcc” function has been used to extract the MFCC features for each file, in which the parameters previously defined for said function have been used. This function, for the particular case of "irm01_s01_test1.wav" which would be the first test file, would return 259 frames of 20 components in the form of a 20x259 matrix, which we will first have to transpose to get the appropriate dimensions and then use it in the construction of the GMM models.
+
 Once the features for each file have been extracted, the GMM model is built using the “mixture.GasussianMixture” function. For each training file, its corresponding GMM model is saved since it will be used in the testing phase. In this first phase, 8 gaussians have been used to build the models and a diagonal covariance matrix.
+
 
 # Testing phase
 
 The task flow for both subsections will be the same:
+
    1. Extract the MFCC features using the same parameters as in the training phase.
+   
    2. Calculate the log-likelihood for each model, for each testing file. In other words, for each testing file, the log-likelihood of the GMM models (calculated previously)           will be calculated. To calculate the log-likelihood of each model considering the features of each one, the function "score_sample" will be used as follows:                     "model.score_samples (MFCC)", where “model” refers to each previously calculated model, and MFCC are the features of the corresponding file.
+   
    3. The corresponding speaker will be selected based on the GMM model that reports the highest log-likelihood value. Since the "score_samples" function specified above returns       a data series for each feature, a summation of these values will be made for each model in such a way that the score of each model in terms of log-likelihood is stored in       an array called “scores”. Then we select the largest of each of them to identify the speaker.
+   
    
 # Clean conditions   
 
 The first thing is to read the audio files destined for this section and then repeat for each of them the three steps described above. When the different speakers identified by the method have been saved in a list, these speakers will be compared with the speakers that are stored in the text file corresponding to the clean condition audios. Following this method, an accuracy of 98.75% is obtained, which is a high value that indicates that our method is capable of correctly and accurately identifying audio file speakers in clean conditions.
 
+
 # Noisy conditions
 
 In this case the three steps specified at the beginning of this section have been repeated but, in this case, using the text file that refers to the audio files in noisy conditions. As expected, by including these noisy conditions, it will be more difficult for the method to correctly identify the speaker of each audio file, so the accuracy will be lower.
+
 By evaluating the method under noisy conditions in the same way as under clean conditions, we obtain a low accuracy of 48.12%, which indicates that the method is not capable of identifying properly the speakers of the audio files.
+
 
 # Improvements
 
 The main objective of this section is to introduce improvements in the method of identifying speakers in such a way that the accuracy when evaluating said method is greater, especially trying to improve the accuracy and precision of the method in noisy conditions.
 For this, three parameters have been fundamentally evaluated: the features that are extracted from each audio file, the iterations of the algorithm to build the GMM model and the number of Gaussians used.
 
-  **1. Features:** studying the main features of an audio file and considering the ones that we can extract through the “lebrosa” library, we have decided to extract the              following features for each file:
+  * **1. Features:** studying the main features of an audio file and considering the ones that we can extract through the “lebrosa” library, we have decided to extract the              following features for each file:
   
   > *	**Delta features** delta features are the local estimate of the derivate of the input data. In this case, both the first and second derivatives are computed. For this,             the “lebrosa.feature.delta” method will be used, which receives as parameters the previously calculated MFCC features. As previously mentioned, taking the case of               the first test audio file, the MFCC features are presented in the form of a 259x20 matrix. When calculating the delta features since they are the local estimate                 derivatives of the MFCC data, they will have the same dimensions as this, obtaining as output a matrix of 259x20. Adding these features to the previously existing               MFCC, we obtain a new matrix of 259x40, including 20 new features in the columns.
   
